@@ -186,10 +186,10 @@ export const TicketPreview = forwardRef<HTMLDivElement, TicketPreviewProps>(
             </div>
 
             {/* Fiscal Footer */}
-            <div className="border-t border-gray-400 pt-2 mt-4" style={{ lineHeight: ticketStyle.lineHeight }}>
-              <div style={{ fontWeight: "bold" }}>{fiscalInfo.cae}</div>
+            <div className="border-gray-400 pt-2 mt-4" style={{ lineHeight: ticketStyle.lineHeight }}>
+              <div style={{ fontWeight: "bold" }}><span style={{ fontFamily: "'Bradley Hand ITC', cursive" }}>CF</span> {fiscalInfo.cae}</div>
               <div className="flex justify-between" style={{ fontStyle: "italic" }}>
-                <span>DGI</span>
+                <span style={{ fontFamily: "'Bradley Hand ITC', cursive" }}>DGI</span>
                 <span>{fiscalInfo.dgiVersion}  {fiscalInfo.operatorName}</span>
               </div>
             </div>

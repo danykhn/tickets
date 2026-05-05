@@ -93,6 +93,16 @@ export function PrintExport({
     const actualPayment = paymentInfo.amount || calculations.total
     const change = actualPayment - calculations.total
     
+    // Map font names to jsPDF-compatible fonts
+    const fontMap: Record<string, string> = {
+      "Courier New": "courier",
+      "Consolas": "courier",
+      "Monaco": "courier",
+      "Lucida Console": "courier",
+      "monospace": "courier",
+    }
+    const pdfFont = fontMap[ticketStyle.fontFamily] || "courier"
+    
     // Create PDF with 80mm width
     const doc = new jsPDF({
       orientation: "portrait",
@@ -100,7 +110,7 @@ export function PrintExport({
       format: [80, 200],
     })
 
-    doc.setFont("courier", ticketStyle.fontWeight === "bold" ? "bold" : "normal")
+    doc.setFont(pdfFont, ticketStyle.fontWeight === "bold" ? "bold" : "normal")
     let y = 6
     const leftMargin = 3
     const rightMargin = 77
@@ -118,12 +128,12 @@ export function PrintExport({
 
     // Business Header
     doc.setFontSize(ticketStyle.fontSize + 1)
-    doc.setFont("courier", "bolditalic")
+    doc.setFont(pdfFont, "bolditalic")
     doc.text(businessInfo.businessName, 40, y, { align: "center" })
     y += lineHeight + 1
 
     doc.setFontSize(ticketStyle.fontSize)
-    doc.setFont("courier", ticketStyle.fontWeight === "bold" ? "bold" : "normal")
+    doc.setFont(pdfFont, ticketStyle.fontWeight === "bold" ? "bold" : "normal")
     doc.text(businessInfo.legalName, leftMargin, y)
     y += lineHeight
     doc.text(`CUIT Nro: ${businessInfo.cuit}`, leftMargin, y)
@@ -145,11 +155,11 @@ export function PrintExport({
     y += 3
 
     // Invoice Info
-    doc.setFont("courier", "bold")
+    doc.setFont(pdfFont, "bold")
     doc.text(`TICKET FACTURA  ${invoiceInfo.invoiceType}`, leftMargin, y)
     doc.text(`N°${invoiceInfo.pointOfSale}-${invoiceInfo.invoiceNumber.padStart(8, "0")}`, rightMargin, y, { align: "right" })
     y += lineHeight
-    doc.setFont("courier", ticketStyle.fontWeight === "bold" ? "bold" : "normal")
+    doc.setFont(pdfFont, ticketStyle.fontWeight === "bold" ? "bold" : "normal")
     doc.text(`(COD ${invoiceInfo.invoiceCode})`, leftMargin, y)
     doc.text(`Fecha ${invoiceInfo.date}`, rightMargin, y, { align: "right" })
     y += lineHeight
@@ -222,7 +232,7 @@ export function PrintExport({
       y += lineHeight
     })
 
-    doc.setFont("courier", "bold")
+    doc.setFont(pdfFont, "bold")
     doc.text("TOTAL", leftMargin, y)
     doc.text(formatCurrency(calculations.total), rightMargin, y, { align: "right" })
     y += lineHeight + 2
@@ -233,7 +243,7 @@ export function PrintExport({
 
     doc.text("RECIBIMOS", leftMargin, y)
     y += lineHeight
-    doc.setFont("courier", ticketStyle.fontWeight === "bold" ? "bold" : "normal")
+    doc.setFont(pdfFont, ticketStyle.fontWeight === "bold" ? "bold" : "normal")
     doc.text(paymentInfo.method, leftMargin, y)
     doc.text(formatCurrency(actualPayment), rightMargin, y, { align: "right" })
     y += lineHeight
@@ -245,12 +255,11 @@ export function PrintExport({
     y += lineHeight + 2
 
     // Fiscal footer
-    doc.line(leftMargin, y, rightMargin, y)
-    y += 3
-    doc.setFont("courier", "bold")
-    doc.text(fiscalInfo.cae, leftMargin, y)
+    y++
+    doc.setFont(pdfFont, "bold")
+    doc.text(`CF ${fiscalInfo.cae}`, leftMargin, y)
     y += lineHeight
-    doc.setFont("courier", "italic")
+    doc.setFont(pdfFont, "italic")
     doc.text("DGI", leftMargin, y)
     doc.text(`${fiscalInfo.dgiVersion}  ${fiscalInfo.operatorName}`, rightMargin, y, { align: "right" })
 
@@ -426,10 +435,10 @@ function generatePrintHTML(
   html += `</div>`
 
   // Fiscal Footer
-  html += `<div class="separator" style="border-top: 1px solid black;"></div>`
-  html += `<div class="section">`
-  html += `<div class="bold">${fiscalInfo.cae}</div>`
-  html += `<div class="row italic"><span>DGI</span><span>${fiscalInfo.dgiVersion}  ${fiscalInfo.operatorName}</span></div>`
+
+  html += `<div class="section" style="margin-top:10px;">`
+  html += `<div class="bold"><span style="font-family:'Bradley Hand ITC', cursive;">CF</span> ${fiscalInfo.cae}</div>`
+  html += `<div class="row italic"><span style="font-family:'Bradley Hand ITC', cursive;">DGI</span><span>${fiscalInfo.dgiVersion}  ${fiscalInfo.operatorName}</span></div>`
   html += `</div>`
 
   return html

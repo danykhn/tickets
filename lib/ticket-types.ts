@@ -167,9 +167,9 @@ export function getDefaultPaymentInfo(): PaymentInfo {
 
 export function getDefaultFiscalInfo(): FiscalInfo {
   return {
-    cae: "CF    XXXXXXXXXXXXXXXXX",
+    cae: "    XXXXXXXXXXXXXXXXX",
     dgiVersion: "V:01.02",
-    operatorName: "Operador",
+    operatorName: "",
   }
 }
 
