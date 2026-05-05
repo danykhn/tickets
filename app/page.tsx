@@ -9,16 +9,16 @@ import { PrintExport } from "@/components/print-export"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Receipt, FileSpreadsheet } from "lucide-react"
-import type { TicketItem, Ticket, BusinessInfo, InvoiceInfo, CustomerInfo, PaymentInfo, FiscalInfo } from "@/lib/ticket-types"
+import type { TicketItem, Ticket, BusinessInfo, InvoiceInfo, CustomerInfo, PaymentInfo, FiscalInfo, CustomTax, TicketStyle } from "@/lib/ticket-types"
 import { 
   generateId, 
   getDefaultBusinessInfo, 
   getDefaultInvoiceInfo, 
   getDefaultCustomerInfo, 
   getDefaultPaymentInfo, 
-  getDefaultFiscalInfo 
+  getDefaultFiscalInfo,
+  getDefaultTicketStyle
 } from "@/lib/ticket-types"
-import Footer from "@/components/footer"
 
 export default function TicketGeneratorPage() {
   // Manual form state
@@ -28,6 +28,8 @@ export default function TicketGeneratorPage() {
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>(getDefaultCustomerInfo())
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>(getDefaultPaymentInfo())
   const [fiscalInfo, setFiscalInfo] = useState<FiscalInfo>(getDefaultFiscalInfo())
+  const [customTaxes, setCustomTaxes] = useState<CustomTax[]>([])
+  const [ticketStyle, setTicketStyle] = useState<TicketStyle>(getDefaultTicketStyle())
 
   // Excel import state
   const [importedTickets, setImportedTickets] = useState<Ticket[]>([])
@@ -78,7 +80,7 @@ export default function TicketGeneratorPage() {
                 Generador de Tickets
               </h1>
               <p className="text-sm text-muted-foreground">
-                Genera e imprime tickets
+               Genera e imprime tickets
               </p>
             </div>
           </div>
@@ -87,7 +89,7 @@ export default function TicketGeneratorPage() {
 
       <main className="container mx-auto px-4 py-6">
         <Tabs defaultValue="manual" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-1">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="manual" className="gap-2">
               <Receipt className="h-4 w-4" />
               Entrada Manual
@@ -116,6 +118,10 @@ export default function TicketGeneratorPage() {
                   onPaymentInfoChange={setPaymentInfo}
                   fiscalInfo={fiscalInfo}
                   onFiscalInfoChange={setFiscalInfo}
+                  customTaxes={customTaxes}
+                  onCustomTaxesChange={setCustomTaxes}
+                  ticketStyle={ticketStyle}
+                  onTicketStyleChange={setTicketStyle}
                 />
               </div>
 
@@ -128,6 +134,8 @@ export default function TicketGeneratorPage() {
                   customerInfo={customerInfo}
                   paymentInfo={paymentInfo}
                   fiscalInfo={fiscalInfo}
+                  customTaxes={customTaxes}
+                  ticketStyle={ticketStyle}
                 />
               </div>
             </div>
@@ -158,6 +166,8 @@ export default function TicketGeneratorPage() {
                     customerInfo={selectedTicket.customerInfo}
                     paymentInfo={selectedTicket.paymentInfo}
                     fiscalInfo={selectedTicket.fiscalInfo}
+                    customTaxes={selectedTicket.customTaxes}
+                    ticketStyle={selectedTicket.ticketStyle}
                   />
                 ) : (
                   <Card>
@@ -175,7 +185,6 @@ export default function TicketGeneratorPage() {
             </div>
           </TabsContent>
         </Tabs>
-        <Footer />
       </main>
     </div>
   )

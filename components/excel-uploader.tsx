@@ -12,7 +12,8 @@ import {
   getDefaultInvoiceInfo, 
   getDefaultCustomerInfo, 
   getDefaultPaymentInfo, 
-  getDefaultFiscalInfo 
+  getDefaultFiscalInfo,
+  getDefaultTicketStyle
 } from "@/lib/ticket-types"
 
 interface ExcelUploaderProps {
@@ -126,8 +127,10 @@ export function ExcelUploader({ onTicketsLoaded }: ExcelUploaderProps) {
             invoiceInfo: getDefaultInvoiceInfo(),
             customerInfo: getDefaultCustomerInfo(),
             items: [item],
+            customTaxes: [],
             paymentInfo: getDefaultPaymentInfo(),
             fiscalInfo: getDefaultFiscalInfo(),
+            ticketStyle: getDefaultTicketStyle(),
             createdAt: new Date(),
           } as Ticket
         })

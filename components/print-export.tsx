@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Printer, Download } from "lucide-react"
 import { jsPDF } from "jspdf"
-import type { TicketItem, BusinessInfo, InvoiceInfo, CustomerInfo, PaymentInfo, FiscalInfo } from "@/lib/ticket-types"
+import type { TicketItem, BusinessInfo, InvoiceInfo, CustomerInfo, PaymentInfo, FiscalInfo, CustomTax, TicketStyle } from "@/lib/ticket-types"
 import { calculateTicket, formatCurrency, formatQuantity } from "@/lib/ticket-types"
 import { TicketPreview } from "./ticket-preview"
 
@@ -16,9 +16,20 @@ interface PrintExportProps {
   customerInfo: CustomerInfo
   paymentInfo: PaymentInfo
   fiscalInfo: FiscalInfo
+  customTaxes: CustomTax[]
+  ticketStyle: TicketStyle
 }
 
-export function PrintExport({ items, businessInfo, invoiceInfo, customerInfo, paymentInfo, fiscalInfo }: PrintExportProps) {
+export function PrintExport({ 
+  items, 
+  businessInfo, 
+  invoiceInfo, 
+  customerInfo, 
+  paymentInfo, 
+  fiscalInfo,
+  customTaxes,
+  ticketStyle 
+}: PrintExportProps) {
   const previewRef = useRef<HTMLDivElement>(null)
 
   const handlePrint = () => {
@@ -44,14 +55,16 @@ export function PrintExport({ items, businessInfo, invoiceInfo, customerInfo, pa
               padding: 0;
             }
             body {
-              font-family: 'Courier New', Courier, monospace;
-              font-size: 10px;
-              line-height: 1.3;
+              font-family: '${ticketStyle.fontFamily}', 'Courier New', Courier, monospace;
+              font-size: ${ticketStyle.fontSize}px;
+              font-weight: ${ticketStyle.fontWeight};
+              line-height: ${ticketStyle.lineHeight};
               width: 80mm;
               padding: 3mm;
             }
             .header { text-align: center; margin-bottom: 2mm; }
-            .business-name { font-weight: bold; font-size: 11px; font-style: italic; }
+            .logo { max-height: 60px; max-width: 100%; margin: 0 auto 2mm auto; display: block; }
+            .business-name { font-weight: bold; font-size: ${ticketStyle.fontSize + 1}px; font-style: italic; }
             .section { margin-bottom: 2mm; }
             .separator { border-top: 1px dashed #999; margin: 2mm 0; }
             .row { display: flex; justify-content: space-between; }
@@ -62,7 +75,7 @@ export function PrintExport({ items, businessInfo, invoiceInfo, customerInfo, pa
           </style>
         </head>
         <body>
-          ${generatePrintHTML(items, businessInfo, invoiceInfo, customerInfo, paymentInfo, fiscalInfo)}
+          ${generatePrintHTML(items, businessInfo, invoiceInfo, customerInfo, paymentInfo, fiscalInfo, customTaxes, ticketStyle)}
         </body>
       </html>
     `)
@@ -76,7 +89,7 @@ export function PrintExport({ items, businessInfo, invoiceInfo, customerInfo, pa
   }
 
   const handleExportPDF = () => {
-    const calculations = calculateTicket(items)
+    const calculations = calculateTicket(items, customTaxes)
     const actualPayment = paymentInfo.amount || calculations.total
     const change = actualPayment - calculations.total
     
@@ -87,20 +100,30 @@ export function PrintExport({ items, businessInfo, invoiceInfo, customerInfo, pa
       format: [80, 200],
     })
 
-    doc.setFont("courier", "normal")
+    doc.setFont("courier", ticketStyle.fontWeight === "bold" ? "bold" : "normal")
     let y = 6
     const leftMargin = 3
     const rightMargin = 77
-    const lineHeight = 3.5
+    const lineHeight = ticketStyle.lineHeight * 2.5
+
+    // Logo (if present - note: jsPDF has limitations with base64 images)
+    if (businessInfo.logo) {
+      try {
+        doc.addImage(businessInfo.logo, "JPEG", 25, y, 30, 15)
+        y += 18
+      } catch {
+        // Skip logo if it can't be added
+      }
+    }
 
     // Business Header
-    doc.setFontSize(10)
+    doc.setFontSize(ticketStyle.fontSize + 1)
     doc.setFont("courier", "bolditalic")
     doc.text(businessInfo.businessName, 40, y, { align: "center" })
     y += lineHeight + 1
 
-    doc.setFontSize(8)
-    doc.setFont("courier", "normal")
+    doc.setFontSize(ticketStyle.fontSize)
+    doc.setFont("courier", ticketStyle.fontWeight === "bold" ? "bold" : "normal")
     doc.text(businessInfo.legalName, leftMargin, y)
     y += lineHeight
     doc.text(`CUIT Nro: ${businessInfo.cuit}`, leftMargin, y)
@@ -126,7 +149,7 @@ export function PrintExport({ items, businessInfo, invoiceInfo, customerInfo, pa
     doc.text(`TICKET FACTURA  ${invoiceInfo.invoiceType}`, leftMargin, y)
     doc.text(`N°${invoiceInfo.pointOfSale}-${invoiceInfo.invoiceNumber.padStart(8, "0")}`, rightMargin, y, { align: "right" })
     y += lineHeight
-    doc.setFont("courier", "normal")
+    doc.setFont("courier", ticketStyle.fontWeight === "bold" ? "bold" : "normal")
     doc.text(`(COD ${invoiceInfo.invoiceCode})`, leftMargin, y)
     doc.text(`Fecha ${invoiceInfo.date}`, rightMargin, y, { align: "right" })
     y += lineHeight
@@ -191,6 +214,14 @@ export function PrintExport({ items, businessInfo, invoiceInfo, customerInfo, pa
       y += lineHeight
     })
 
+    // Custom taxes
+    customTaxes.forEach((tax) => {
+      const taxAmount = (calculations.subtotal * tax.rate) / 100
+      doc.text(`${tax.description} ${tax.rate.toFixed(2)}%`.substring(0, 30), leftMargin, y)
+      doc.text(formatCurrency(taxAmount), rightMargin, y, { align: "right" })
+      y += lineHeight
+    })
+
     doc.setFont("courier", "bold")
     doc.text("TOTAL", leftMargin, y)
     doc.text(formatCurrency(calculations.total), rightMargin, y, { align: "right" })
@@ -202,7 +233,7 @@ export function PrintExport({ items, businessInfo, invoiceInfo, customerInfo, pa
 
     doc.text("RECIBIMOS", leftMargin, y)
     y += lineHeight
-    doc.setFont("courier", "normal")
+    doc.setFont("courier", ticketStyle.fontWeight === "bold" ? "bold" : "normal")
     doc.text(paymentInfo.method, leftMargin, y)
     doc.text(formatCurrency(actualPayment), rightMargin, y, { align: "right" })
     y += lineHeight
@@ -224,6 +255,7 @@ export function PrintExport({ items, businessInfo, invoiceInfo, customerInfo, pa
     doc.text(`${fiscalInfo.dgiVersion}  ${fiscalInfo.operatorName}`, rightMargin, y, { align: "right" })
 
     doc.save(`ticket_${businessInfo.businessName}_${invoiceInfo.invoiceNumber}_${invoiceInfo.date}.pdf`)
+
   }
 
   return (
@@ -242,6 +274,8 @@ export function PrintExport({ items, businessInfo, invoiceInfo, customerInfo, pa
             customerInfo={customerInfo}
             paymentInfo={paymentInfo}
             fiscalInfo={fiscalInfo}
+            customTaxes={customTaxes}
+            ticketStyle={ticketStyle}
           />
         </div>
 
@@ -255,6 +289,8 @@ export function PrintExport({ items, businessInfo, invoiceInfo, customerInfo, pa
               customerInfo={customerInfo}
               paymentInfo={paymentInfo}
               fiscalInfo={fiscalInfo}
+              customTaxes={customTaxes}
+              ticketStyle={ticketStyle}
             />
           </div>
         </div>
@@ -290,9 +326,11 @@ function generatePrintHTML(
   invoiceInfo: InvoiceInfo,
   customerInfo: CustomerInfo,
   paymentInfo: PaymentInfo,
-  fiscalInfo: FiscalInfo
+  fiscalInfo: FiscalInfo,
+  customTaxes: CustomTax[],
+  ticketStyle: TicketStyle
 ): string {
-  const calculations = calculateTicket(items)
+  const calculations = calculateTicket(items, customTaxes)
   const actualPayment = paymentInfo.amount || calculations.total
   const change = actualPayment - calculations.total
 
@@ -307,6 +345,11 @@ function generatePrintHTML(
   )
 
   let html = ""
+
+  // Logo
+  if (businessInfo.logo) {
+    html += `<div class="header"><img src="${businessInfo.logo}" alt="Logo" class="logo" /></div>`
+  }
 
   // Business Header
   html += `<div class="header"><div class="business-name">${businessInfo.businessName}</div></div>`
@@ -362,6 +405,12 @@ function generatePrintHTML(
 
   Object.entries(taxGroups).forEach(([rate, amount]) => {
     html += `<div class="row"><span>ALICUOTA  ${parseFloat(rate).toFixed(2)}%</span><span>${formatCurrency(amount)}</span></div>`
+  })
+
+  // Custom taxes
+  customTaxes.forEach((tax) => {
+    const taxAmount = (calculations.subtotal * tax.rate) / 100
+    html += `<div class="row"><span>${tax.description} ${tax.rate.toFixed(2)}%</span><span>${formatCurrency(taxAmount)}</span></div>`
   })
 
   html += `<div class="row bold"><span>TOTAL</span><span>${formatCurrency(calculations.total)}</span></div>`

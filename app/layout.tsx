@@ -9,9 +9,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: 'Generador de Tickets',
   description: 'Genera e imprime tickets',
-  
-  
-}
+ }
 
 export default function RootLayout({
   children,

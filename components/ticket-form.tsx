@@ -1,15 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Plus, Trash2, Building2, FileText, User, CreditCard, Shield } from "lucide-react"
-import type { TicketItem, BusinessInfo, InvoiceInfo, CustomerInfo, PaymentInfo, FiscalInfo } from "@/lib/ticket-types"
-import { generateId } from "@/lib/ticket-types"
+import { Plus, Trash2, Building2, FileText, User, CreditCard, Shield, Type, ImageIcon, X } from "lucide-react"
+import type { TicketItem, BusinessInfo, InvoiceInfo, CustomerInfo, PaymentInfo, FiscalInfo, CustomTax, TicketStyle } from "@/lib/ticket-types"
+import { 
+  generateId, 
+  TICKET_FONT_OPTIONS, 
+  TICKET_FONT_SIZE_OPTIONS, 
+  TICKET_FONT_WEIGHT_OPTIONS, 
+  TICKET_LINE_HEIGHT_OPTIONS 
+} from "@/lib/ticket-types"
 
 interface TicketFormProps {
   items: TicketItem[]
@@ -24,6 +29,10 @@ interface TicketFormProps {
   onPaymentInfoChange: (info: PaymentInfo) => void
   fiscalInfo: FiscalInfo
   onFiscalInfoChange: (info: FiscalInfo) => void
+  customTaxes: CustomTax[]
+  onCustomTaxesChange: (taxes: CustomTax[]) => void
+  ticketStyle: TicketStyle
+  onTicketStyleChange: (style: TicketStyle) => void
 }
 
 export function TicketForm({
@@ -39,7 +48,13 @@ export function TicketForm({
   onPaymentInfoChange,
   fiscalInfo,
   onFiscalInfoChange,
+  customTaxes,
+  onCustomTaxesChange,
+  ticketStyle,
+  onTicketStyleChange,
 }: TicketFormProps) {
+  const logoInputRef = useRef<HTMLInputElement>(null)
+  
   const [newItem, setNewItem] = useState<Omit<TicketItem, "id">>({
     productName: "",
     brand: "",
@@ -47,6 +62,29 @@ export function TicketForm({
     unitPrice: 0,
     taxRate: 21,
   })
+
+  const [newTax, setNewTax] = useState<Omit<CustomTax, "id">>({
+    description: "",
+    rate: 0,
+  })
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        onBusinessInfoChange({ ...businessInfo, logo: reader.result as string })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const removeLogo = () => {
+    onBusinessInfoChange({ ...businessInfo, logo: undefined })
+    if (logoInputRef.current) {
+      logoInputRef.current.value = ""
+    }
+  }
 
   const addItem = () => {
     if (!newItem.productName.trim() || newItem.unitPrice <= 0) return
@@ -61,7 +99,7 @@ export function TicketForm({
       brand: "",
       quantity: 1,
       unitPrice: 0,
-      taxRate: 21,
+      taxRate: newItem.taxRate,
     })
   }
 
@@ -77,10 +115,35 @@ export function TicketForm({
     onItemsChange(items.filter((item) => item.id !== id))
   }
 
+  const addCustomTax = () => {
+    if (!newTax.description.trim() || newTax.rate <= 0) return
+
+    const tax: CustomTax = {
+      ...newTax,
+      id: generateId(),
+    }
+    onCustomTaxesChange([...customTaxes, tax])
+    setNewTax({
+      description: "",
+      rate: 0,
+    })
+  }
+
+  const removeCustomTax = (id: string) => {
+    onCustomTaxesChange(customTaxes.filter((tax) => tax.id !== id))
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault()
       addItem()
+    }
+  }
+
+  const handleTaxKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      addCustomTax()
     }
   }
 
@@ -97,6 +160,58 @@ export function TicketForm({
           </AccordionTrigger>
           <AccordionContent>
             <div className="grid grid-cols-2 gap-3 pb-4">
+              {/* Logo Upload */}
+              <div className="col-span-2">
+                <Label className="text-xs">Logo del Negocio</Label>
+                <div className="mt-1 flex items-center gap-3">
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                    id="logo-upload"
+                  />
+                  {businessInfo.logo ? (
+                    <div className="relative">
+                      <img 
+                        src={businessInfo.logo} 
+                        alt="Logo" 
+                        className="h-16 w-auto object-contain border rounded"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-5 w-5"
+                        onClick={removeLogo}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => logoInputRef.current?.click()}
+                      className="h-16 w-24"
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <ImageIcon className="h-5 w-5" />
+                        <span className="text-xs">Cargar</span>
+                      </div>
+                    </Button>
+                  )}
+                  {businessInfo.logo && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => logoInputRef.current?.click()}
+                    >
+                      Cambiar
+                    </Button>
+                  )}
+                </div>
+              </div>
               <div className="col-span-2">
                 <Label className="text-xs">Nombre Comercial</Label>
                 <Input
@@ -250,8 +365,10 @@ export function TicketForm({
                 />
               </div>
               <div>
-                <Label className="text-xs">Hora</Label>
+                <Label className="text-xs">Hora (24h)</Label>
                 <Input
+                  type="time"
+                  step="1"
                   value={invoiceInfo.time}
                   onChange={(e) => onInvoiceInfoChange({ ...invoiceInfo, time: e.target.value })}
                   className="mt-1 h-8 text-sm"
@@ -375,20 +492,16 @@ export function TicketForm({
                 </div>
                 <div>
                   <Label className="text-xs">IVA (%)</Label>
-                  <Select
-                    value={newItem.taxRate.toString()}
-                    onValueChange={(value) => setNewItem({ ...newItem, taxRate: parseFloat(value) })}
-                  >
-                    <SelectTrigger className="mt-1 h-8 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0">0%</SelectItem>
-                      <SelectItem value="10.5">10.5%</SelectItem>
-                      <SelectItem value="21">21%</SelectItem>
-                      <SelectItem value="27">27%</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={newItem.taxRate}
+                    onChange={(e) => setNewItem({ ...newItem, taxRate: parseFloat(e.target.value) || 0 })}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Ej: 21"
+                    className="mt-1 h-8 text-sm"
+                  />
                 </div>
                 <div className="flex items-end">
                   <Button onClick={addItem} size="sm" className="w-full h-8">
@@ -436,26 +549,95 @@ export function TicketForm({
                             placeholder="Precio"
                             className="h-7 text-xs"
                           />
-                          <Select
-                            value={item.taxRate.toString()}
-                            onValueChange={(value) => updateItem(item.id, "taxRate", parseFloat(value))}
-                          >
-                            <SelectTrigger className="h-7 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="0">0%</SelectItem>
-                              <SelectItem value="10.5">10.5%</SelectItem>
-                              <SelectItem value="21">21%</SelectItem>
-                              <SelectItem value="27">27%</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={item.taxRate}
+                            onChange={(e) => updateItem(item.id, "taxRate", parseFloat(e.target.value) || 0)}
+                            placeholder="IVA %"
+                            className="h-7 text-xs"
+                          />
                         </div>
                       </div>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => removeItem(item.id)}
+                        className="h-7 w-7 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Custom Taxes Section */}
+        <AccordionItem value="customTaxes" className="border rounded-lg px-4">
+          <AccordionTrigger className="hover:no-underline">
+            <div className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              <span className="font-medium">Impuestos Adicionales ({customTaxes.length})</span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-4 pb-4">
+              <p className="text-xs text-muted-foreground">
+                Agrega impuestos adicionales que se calcularan sobre el subtotal. Ej: Percepciones, retenciones, otros gravamenes.
+              </p>
+              {/* New Tax Form */}
+              <div className="grid grid-cols-3 gap-3 p-3 bg-muted/30 rounded-lg">
+                <div className="col-span-2">
+                  <Label className="text-xs">Descripcion del Impuesto</Label>
+                  <Input
+                    value={newTax.description}
+                    onChange={(e) => setNewTax({ ...newTax, description: e.target.value })}
+                    onKeyDown={handleTaxKeyDown}
+                    placeholder="Ej: Percepcion IIBB 3%"
+                    className="mt-1 h-8 text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Tasa (%)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={newTax.rate || ""}
+                    onChange={(e) => setNewTax({ ...newTax, rate: parseFloat(e.target.value) || 0 })}
+                    onKeyDown={handleTaxKeyDown}
+                    placeholder="Ej: 3"
+                    className="mt-1 h-8 text-sm"
+                  />
+                </div>
+                <div className="col-span-3">
+                  <Button onClick={addCustomTax} size="sm" className="w-full h-8">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Agregar Impuesto
+                  </Button>
+                </div>
+              </div>
+
+              {/* Custom Taxes List */}
+              {customTaxes.length > 0 && (
+                <div className="space-y-2">
+                  {customTaxes.map((tax) => (
+                    <div
+                      key={tax.id}
+                      className="flex items-center justify-between gap-2 p-2 bg-muted/30 rounded-lg"
+                    >
+                      <div className="flex-1">
+                        <span className="text-sm">{tax.description}</span>
+                        <span className="text-xs text-muted-foreground ml-2">({tax.rate}%)</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeCustomTax(tax.id)}
                         className="h-7 w-7 text-destructive hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -546,6 +728,95 @@ export function TicketForm({
                   onChange={(e) => onFiscalInfoChange({ ...fiscalInfo, operatorName: e.target.value })}
                   className="mt-1 h-8 text-sm"
                 />
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Ticket Style Section */}
+        <AccordionItem value="style" className="border rounded-lg px-4">
+          <AccordionTrigger className="hover:no-underline">
+            <div className="flex items-center gap-2">
+              <Type className="h-4 w-4" />
+              <span className="font-medium">Formato del Ticket</span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="grid grid-cols-2 gap-3 pb-4">
+              <div className="col-span-2">
+                <Label className="text-xs">Tipografia</Label>
+                <Select
+                  value={ticketStyle.fontFamily}
+                  onValueChange={(value) => onTicketStyleChange({ ...ticketStyle, fontFamily: value })}
+                >
+                  <SelectTrigger className="mt-1 h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TICKET_FONT_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <span style={{ fontFamily: option.value }}>{option.label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Se recomienda usar fuentes monoespaciadas para tickets fiscales
+                </p>
+              </div>
+              <div>
+                <Label className="text-xs">Tamano de Fuente</Label>
+                <Select
+                  value={ticketStyle.fontSize.toString()}
+                  onValueChange={(value) => onTicketStyleChange({ ...ticketStyle, fontSize: parseInt(value) })}
+                >
+                  <SelectTrigger className="mt-1 h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TICKET_FONT_SIZE_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value.toString()}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs">Peso de Fuente</Label>
+                <Select
+                  value={ticketStyle.fontWeight}
+                  onValueChange={(value) => onTicketStyleChange({ ...ticketStyle, fontWeight: value })}
+                >
+                  <SelectTrigger className="mt-1 h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TICKET_FONT_WEIGHT_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="col-span-2">
+                <Label className="text-xs">Altura de Linea</Label>
+                <Select
+                  value={ticketStyle.lineHeight.toString()}
+                  onValueChange={(value) => onTicketStyleChange({ ...ticketStyle, lineHeight: parseFloat(value) })}
+                >
+                  <SelectTrigger className="mt-1 h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TICKET_LINE_HEIGHT_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value.toString()}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </AccordionContent>

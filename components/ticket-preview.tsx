@@ -1,7 +1,7 @@
 "use client"
 
 import { forwardRef } from "react"
-import type { TicketItem, BusinessInfo, InvoiceInfo, CustomerInfo, PaymentInfo, FiscalInfo } from "@/lib/ticket-types"
+import type { TicketItem, BusinessInfo, InvoiceInfo, CustomerInfo, PaymentInfo, FiscalInfo, CustomTax, TicketStyle } from "@/lib/ticket-types"
 import { calculateTicket, formatCurrency, formatQuantity } from "@/lib/ticket-types"
 
 interface TicketPreviewProps {
@@ -11,12 +11,14 @@ interface TicketPreviewProps {
   customerInfo: CustomerInfo
   paymentInfo: PaymentInfo
   fiscalInfo: FiscalInfo
+  customTaxes: CustomTax[]
+  ticketStyle: TicketStyle
   className?: string
 }
 
 export const TicketPreview = forwardRef<HTMLDivElement, TicketPreviewProps>(
-  function TicketPreview({ items, businessInfo, invoiceInfo, customerInfo, paymentInfo, fiscalInfo, className = "" }, ref) {
-    const calculations = calculateTicket(items)
+  function TicketPreview({ items, businessInfo, invoiceInfo, customerInfo, paymentInfo, fiscalInfo, customTaxes, ticketStyle, className = "" }, ref) {
+    const calculations = calculateTicket(items, customTaxes)
 
     // Group items by tax rate for display
     const taxGroups = items.reduce(
@@ -39,21 +41,38 @@ export const TicketPreview = forwardRef<HTMLDivElement, TicketPreviewProps>(
     return (
       <div
         ref={ref}
-        className={`ticket-preview bg-white text-black font-mono text-[10px] leading-tight ${className}`}
+        className={`ticket-preview bg-white text-black ${className}`}
         style={{
           width: "80mm",
           minHeight: "80mm",
           padding: "3mm",
           boxSizing: "border-box",
+          fontFamily: ticketStyle.fontFamily,
+          fontSize: `${ticketStyle.fontSize}px`,
+          fontWeight: ticketStyle.fontWeight,
+          lineHeight: ticketStyle.lineHeight,
         }}
       >
+        {/* Logo */}
+        {businessInfo.logo && (
+          <div className="text-center mb-2">
+            <img 
+              src={businessInfo.logo} 
+              alt="Logo" 
+              style={{ maxHeight: "60px", maxWidth: "100%", margin: "0 auto" }}
+            />
+          </div>
+        )}
+
         {/* Business Header */}
         <div className="text-center mb-2">
-          <div className="font-bold text-[11px] italic">{businessInfo.businessName}</div>
+          <div style={{ fontWeight: "bold", fontSize: `${ticketStyle.fontSize + 1}px`, fontStyle: "italic" }}>
+            {businessInfo.businessName}
+          </div>
         </div>
 
         {/* Business Details */}
-        <div className="mb-2 space-y-0.5">
+        <div className="mb-2" style={{ lineHeight: ticketStyle.lineHeight }}>
           <div>{businessInfo.legalName}</div>
           <div>CUIT Nro: {businessInfo.cuit}</div>
           <div>ING. BRUTOS: {businessInfo.ingresosBrutos}</div>
@@ -69,7 +88,7 @@ export const TicketPreview = forwardRef<HTMLDivElement, TicketPreviewProps>(
         {/* Invoice Info */}
         <div className="mb-2">
           <div className="flex justify-between">
-            <span className="font-bold">TICKET FACTURA  {invoiceInfo.invoiceType}</span>
+            <span style={{ fontWeight: "bold" }}>TICKET FACTURA  {invoiceInfo.invoiceType}</span>
             <span>N°{invoiceInfo.pointOfSale}-{invoiceInfo.invoiceNumber.padStart(8, "0")}</span>
           </div>
           <div className="flex justify-between">
@@ -83,7 +102,7 @@ export const TicketPreview = forwardRef<HTMLDivElement, TicketPreviewProps>(
         <div className="border-t border-dashed border-gray-400 my-2" />
 
         {/* Customer Info */}
-        <div className="mb-2 space-y-0.5">
+        <div className="mb-2" style={{ lineHeight: ticketStyle.lineHeight }}>
           <div>{customerInfo.taxCategory}</div>
           <div>{customerInfo.city} ({customerInfo.postalCode})</div>
           <div>{customerInfo.province}</div>
@@ -119,7 +138,7 @@ export const TicketPreview = forwardRef<HTMLDivElement, TicketPreviewProps>(
         {items.length > 0 && (
           <>
             {/* Totals Section */}
-            <div className="border-t border-gray-400 pt-2 mt-2 space-y-0.5">
+            <div className="border-t border-gray-400 pt-2 mt-2" style={{ lineHeight: ticketStyle.lineHeight }}>
               <div className="flex justify-between">
                 <span>SUBTOT. IMP. NETO GRAVADO</span>
                 <span>{formatCurrency(calculations.subtotal)}</span>
@@ -132,15 +151,26 @@ export const TicketPreview = forwardRef<HTMLDivElement, TicketPreviewProps>(
                 </div>
               ))}
 
-              <div className="flex justify-between font-bold pt-1">
+              {/* Custom Taxes */}
+              {customTaxes.map((tax) => {
+                const taxAmount = (calculations.subtotal * tax.rate) / 100
+                return (
+                  <div key={tax.id} className="flex justify-between">
+                    <span>{tax.description} {tax.rate.toFixed(2)}%</span>
+                    <span>{formatCurrency(taxAmount)}</span>
+                  </div>
+                )
+              })}
+
+              <div className="flex justify-between pt-1" style={{ fontWeight: "bold" }}>
                 <span>TOTAL</span>
                 <span>{formatCurrency(calculations.total)}</span>
               </div>
             </div>
 
             {/* Payment Section */}
-            <div className="border-t border-gray-400 pt-2 mt-2 space-y-0.5">
-              <div className="font-bold">RECIBIMOS</div>
+            <div className="border-t border-gray-400 pt-2 mt-2" style={{ lineHeight: ticketStyle.lineHeight }}>
+              <div style={{ fontWeight: "bold" }}>RECIBIMOS</div>
               <div className="flex justify-between">
                 <span>{paymentInfo.method}</span>
                 <span>{formatCurrency(actualPayment)}</span>
@@ -156,9 +186,9 @@ export const TicketPreview = forwardRef<HTMLDivElement, TicketPreviewProps>(
             </div>
 
             {/* Fiscal Footer */}
-            <div className="border-t border-gray-400 pt-2 mt-4 space-y-0.5">
-              <div className="font-bold">{fiscalInfo.cae}</div>
-              <div className="flex justify-between italic">
+            <div className="border-t border-gray-400 pt-2 mt-4" style={{ lineHeight: ticketStyle.lineHeight }}>
+              <div style={{ fontWeight: "bold" }}>{fiscalInfo.cae}</div>
+              <div className="flex justify-between" style={{ fontStyle: "italic" }}>
                 <span>DGI</span>
                 <span>{fiscalInfo.dgiVersion}  {fiscalInfo.operatorName}</span>
               </div>
