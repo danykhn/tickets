@@ -47,6 +47,7 @@ export const TicketPreview = forwardRef<HTMLDivElement, TicketPreviewProps>(
           minHeight: "80mm",
           padding: "3mm",
           boxSizing: "border-box",
+          boxShadow: "0 0 5px rgba(0,0,0,0.1)",
           fontFamily: ticketStyle.fontFamily,
           fontSize: `${ticketStyle.fontSize}px`,
           fontWeight: ticketStyle.fontWeight,
@@ -65,7 +66,7 @@ export const TicketPreview = forwardRef<HTMLDivElement, TicketPreviewProps>(
         )}
 
         {/* Business Header */}
-        <div className="text-center mb-2">
+        <div className="text-center  mb-3.75 mt-3.75">
           <div style={{ fontWeight: "bold", fontSize: `${ticketStyle.fontSize + 1}px`, fontStyle: "italic" }}>
             {businessInfo.businessName}
           </div>
@@ -138,7 +139,7 @@ export const TicketPreview = forwardRef<HTMLDivElement, TicketPreviewProps>(
         {items.length > 0 && (
           <>
             {/* Totals Section */}
-            <div className="border-t border-gray-400 pt-2 mt-2" style={{ lineHeight: ticketStyle.lineHeight }}>
+            <div className="border-gray-400 pt-2 mt-2" style={{ lineHeight: ticketStyle.lineHeight }}>
               <div className="flex justify-between">
                 <span>SUBTOT. IMP. NETO GRAVADO</span>
                 <span>{formatCurrency(calculations.subtotal)}</span>
@@ -169,7 +170,7 @@ export const TicketPreview = forwardRef<HTMLDivElement, TicketPreviewProps>(
             </div>
 
             {/* Payment Section */}
-            <div className="border-t border-gray-400 pt-2 mt-2" style={{ lineHeight: ticketStyle.lineHeight }}>
+            <div className=" border-gray-400 pt-2 mt-2" style={{ lineHeight: ticketStyle.lineHeight }}>
               <div style={{ fontWeight: "bold" }}>RECIBIMOS</div>
               <div className="flex justify-between">
                 <span>{paymentInfo.method}</span>
@@ -186,7 +187,7 @@ export const TicketPreview = forwardRef<HTMLDivElement, TicketPreviewProps>(
             </div>
 
             {/* Fiscal Footer */}
-            <div className="border-gray-400 pt-2 mt-4" style={{ lineHeight: ticketStyle.lineHeight }}>
+            <div className="border-gray-400 pt-2 mt-7.5" style={{ lineHeight: ticketStyle.lineHeight }}>
               <div style={{ fontWeight: "bold" }}><span style={{ fontFamily: "'Bradley Hand ITC', cursive" }}>CF</span> {fiscalInfo.cae}</div>
               <div className="flex justify-between" style={{ fontStyle: "italic" }}>
                 <span style={{ fontFamily: "'Bradley Hand ITC', cursive" }}>DGI</span>

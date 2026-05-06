@@ -66,14 +66,14 @@ export function PrintExport({
             }
             .header { text-align: center; margin-bottom: 2mm; }
             .logo { max-height: 60px; max-width: 100%; margin: 0 auto 2mm auto; display: block; }
-            .business-name { font-weight: bold; font-size: ${ticketStyle.fontSize + 1}px; font-style: italic; }
+            .business-name { font-weight: bold; font-size: ${ticketStyle.fontSize + 1}px; font-style: italic; margin-top: 15px; margin-bottom: 15px; }
             .section { margin-bottom: 2mm; }
             .separator { border-top: 1px dashed #999; margin: 2mm 0; }
             .row { display: flex; justify-content: space-between; }
             .bold { font-weight: bold; }
             .italic { font-style: italic; }
-            .product { margin-bottom: 2mm;   height: 130px; }
-            .totals { border-top: 1px solid black; padding-top: 2mm; margin-top: 2mm; }
+            .product { height: auto;}
+            .totals {  margin-top: 20px; }
           </style>
         </head>
         <body>
@@ -201,10 +201,7 @@ export function PrintExport({
     })
 
     // Totals section
-    doc.setLineDashPattern([], 0)
-    doc.line(leftMargin, y, rightMargin, y)
-    y += 3
-
+  
     doc.text("SUBTOT. IMP. NETO GRAVADO", leftMargin, y)
     doc.text(formatCurrency(calculations.subtotal), rightMargin, y, { align: "right" })
     y += lineHeight
@@ -257,7 +254,7 @@ export function PrintExport({
     y += lineHeight + 2
 
     // Fiscal footer
-    y++
+  
     doc.setFont(pdfFont, "bold")
     doc.text(`CF ${fiscalInfo.cae}`, leftMargin, y)
     y += lineHeight
@@ -424,11 +421,11 @@ function generatePrintHTML(
     html += `<div class="row"><span>${tax.description} ${tax.rate.toFixed(2)}%</span><span>${formatCurrency(taxAmount)}</span></div>`
   })
 
-  html += `<div class="row bold"><span>TOTAL</span><span>${formatCurrency(calculations.total)}</span></div>`
+  html += `<div class="row bold" style="margin-top:15px;"><span>TOTAL</span><span>${formatCurrency(calculations.total)}</span></div>`
   html += `</div>`
 
   // Payment
-  html += `<div class="separator" style="border-top: 1px solid black;"></div>`
+ 
   html += `<div class="section">`
   html += `<div class="bold">RECIBIMOS</div>`
   html += `<div class="row"><span>${paymentInfo.method}</span><span>${formatCurrency(actualPayment)}</span></div>`
@@ -438,7 +435,7 @@ function generatePrintHTML(
 
   // Fiscal Footer
 
-  html += `<div class="section" style="margin-top:10px;">`
+  html += `<div class="section" style="margin-top:30px; margin-bottom: 30px;">`
   html += `<div class="bold"><span style="font-family:'Bradley Hand ITC', cursive;">CF</span> ${fiscalInfo.cae}</div>`
   html += `<div class="row italic"><span style="font-family:'Bradley Hand ITC', cursive;">DGI</span><span>${fiscalInfo.dgiVersion}  ${fiscalInfo.operatorName}</span></div>`
   html += `</div>`
