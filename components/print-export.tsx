@@ -45,7 +45,7 @@ export function PrintExport({
         <head>
           <title>Ticket</title>
           <style>
-            @page {
+@page {
               size: 80mm auto;
               margin: 0;
             }
@@ -60,7 +60,9 @@ export function PrintExport({
               font-weight: ${ticketStyle.fontWeight};
               line-height: ${ticketStyle.lineHeight};
               width: 80mm;
+              height: 180mm;
               padding: 3mm;
+              margin-bottom: 50mm;
             }
             .header { text-align: center; margin-bottom: 2mm; }
             .logo { max-height: 60px; max-width: 100%; margin: 0 auto 2mm auto; display: block; }
@@ -70,7 +72,7 @@ export function PrintExport({
             .row { display: flex; justify-content: space-between; }
             .bold { font-weight: bold; }
             .italic { font-style: italic; }
-            .product { margin-bottom: 2mm; }
+            .product { margin-bottom: 2mm;   height: 130px; }
             .totals { border-top: 1px solid black; padding-top: 2mm; margin-top: 2mm; }
           </style>
         </head>
