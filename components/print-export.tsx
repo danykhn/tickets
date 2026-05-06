@@ -46,7 +46,7 @@ export function PrintExport({
           <title>Ticket</title>
           <style>
             @page {
-              size: 80mm auto;
+              size: 80mm 180mm;
               margin: 0;
             }
             * {
@@ -103,11 +103,11 @@ export function PrintExport({
     }
     const pdfFont = fontMap[ticketStyle.fontFamily] || "courier"
     
-    // Create PDF with 80mm width
+    // Create PDF with 80mm width x 180mm height
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
-      format: [80, 200],
+      format: [80, 180],
     })
 
     doc.setFont(pdfFont, ticketStyle.fontWeight === "bold" ? "bold" : "normal")
