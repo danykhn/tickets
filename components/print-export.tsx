@@ -32,7 +32,40 @@ export function PrintExport({
 }: PrintExportProps) {
   const previewRef = useRef<HTMLDivElement>(null)
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    // Guardar negocio en el backend
+    let startDateFormatted = null
+    if (businessInfo.startDate) {
+      const date = new Date(businessInfo.startDate)
+      if (!isNaN(date.getTime())) {
+        startDateFormatted = date.toISOString()
+      }
+    }
+    
+    const businessData = {
+      businessName: businessInfo.businessName,
+      legalName: businessInfo.legalName,
+      cuit: businessInfo.cuit,
+      ingresosBrutos: businessInfo.ingresosBrutos,
+      address: businessInfo.address,
+      city: businessInfo.city,
+      postalCode: businessInfo.postalCode,
+      province: businessInfo.province,
+      startDate: startDateFormatted,
+      taxCategory: businessInfo.taxCategory,
+      logo: businessInfo.logo,
+    }
+    
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3334"}/api/business`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(businessData),
+      })
+    } catch (error) {
+      console.error("Error saving business:", error)
+    }
+
     const printContent = previewRef.current
     if (!printContent) return
 

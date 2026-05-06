@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useCallback, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -67,6 +67,78 @@ export function TicketForm({
     description: "",
     rate: 0,
   })
+
+  const [businessSearch, setBusinessSearch] = useState("")
+  const [businessResults, setBusinessResults] = useState<BusinessInfo[]>([])
+  const [showBusinessDropdown, setShowBusinessDropdown] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const searchBusinesses = useCallback(async (query: string) => {
+    if (!query || query.length < 3) {
+      setBusinessResults([])
+      return
+    }
+    setIsSearching(true)
+    try {
+      const res = await fetch(`/api/business/search?q=${encodeURIComponent(query)}`)
+      const data = await res.json()
+      const results = data.businesses || []
+      console.log("Search results:", results)
+      setBusinessResults(results)
+      if (results.length > 0) {
+        setShowBusinessDropdown(true)
+      }
+    } catch (error) {
+      console.error("Error searching businesses:", error)
+      setBusinessResults([])
+    } finally {
+      setIsSearching(false)
+    }
+  }, [])
+
+  const handleSearchChange = (value: string) => {
+    console.log("handleSearchChange called with:", value)
+    setBusinessSearch(value)
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+    searchTimeoutRef.current = setTimeout(() => {
+      console.log("Executing search for:", value)
+      searchBusinesses(value)
+    }, 300)
+  }
+
+  const selectBusiness = (business: BusinessInfo & { id?: string }) => {
+    console.log("Selecting business:", business)
+    onBusinessInfoChange({
+      logo: business.logo,
+      businessName: business.businessName,
+      legalName: business.legalName,
+      cuit: business.cuit,
+      ingresosBrutos: business.ingresosBrutos,
+      address: business.address,
+      city: business.city,
+      postalCode: business.postalCode,
+      province: business.province,
+      startDate: business.startDate,
+      taxCategory: business.taxCategory,
+    })
+    setBusinessSearch("")
+    setBusinessResults([])
+    setShowBusinessDropdown(false)
+  }
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (!target.closest(".business-search-container")) {
+        setShowBusinessDropdown(false)
+      }
+    }
+    document.addEventListener("click", handleClickOutside)
+    return () => document.removeEventListener("click", handleClickOutside)
+  }, [])
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -209,6 +281,37 @@ export function TicketForm({
                     >
                       Cambiar
                     </Button>
+                  )}
+                </div>
+              </div>
+              <div className="col-span-2 relative business-search-container" style={{ overflow: "visible" }}>
+                <Label className="text-xs">Buscar negocio existente</Label>
+                <div className="relative" style={{ overflow: "visible" }}>
+                  <Input
+                    value={businessSearch}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    onFocus={() => businessResults.length > 0 && setShowBusinessDropdown(true)}
+                    placeholder="Buscar por nombre, razón social o CUIT (mínimo 3 letras)"
+                    className="mt-1 h-8 text-sm pr-16"
+                    autoComplete="off"
+                    style={{ overflow: "visible" }}
+                  />
+                  {showBusinessDropdown && businessResults.length > 0 && (
+                    <div className="absolute left-0 right-0 z-[9999] mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto" style={{ overflow: "visible" }}>
+                      {businessResults.map((business, idx) => (
+                        <div
+                          key={business.cuit || idx}
+                          className="px-3 py-2 cursor-pointer hover:bg-gray-100 border-b last:border-b-0"
+                          onClick={() => selectBusiness(business)}
+                        >
+                          <div className="font-medium">{business.businessName}</div>
+                          <div className="text-xs text-gray-500">{business.legalName} - {business.cuit}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {isSearching && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">Buscando...</div>
                   )}
                 </div>
               </div>
