@@ -46,7 +46,7 @@ export function PrintExport({
           <title>Ticket</title>
           <style>
             @page {
-              size: 80mm 180mm;
+              size: 80mm auto;
               margin: 0;
             }
             * {
