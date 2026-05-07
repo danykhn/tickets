@@ -6,6 +6,11 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    turbo: {
+      root: import.meta.dirname,
+    },
+  },
 }
 
 export default nextConfig

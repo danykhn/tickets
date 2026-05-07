@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback, useEffect, useMemo } from "react"
+import { searchBusinesses } from "@/lib/api/business"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -74,16 +75,14 @@ export function TicketForm({
   const [isSearching, setIsSearching] = useState(false)
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const searchBusinesses = useCallback(async (query: string) => {
+  const handleBusinessSearch = useCallback(async (query: string) => {
     if (!query || query.length < 3) {
       setBusinessResults([])
       return
     }
     setIsSearching(true)
     try {
-      const res = await fetch(`/api/business/search?q=${encodeURIComponent(query)}`)
-      const data = await res.json()
-      const results = data.businesses || []
+      const results = await searchBusinesses(query)
       console.log("Search results:", results)
       setBusinessResults(results)
       if (results.length > 0) {
@@ -105,7 +104,7 @@ export function TicketForm({
     }
     searchTimeoutRef.current = setTimeout(() => {
       console.log("Executing search for:", value)
-      searchBusinesses(value)
+      handleBusinessSearch(value)
     }, 300)
   }
 
