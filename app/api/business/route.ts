@@ -4,7 +4,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
-    const res = await fetch(`${process.env.API_URL || "http://localhost:3334"}/api/business`, {
+    const res = await fetch(`${process.env.API_URL || "https://tickets.danykhn.com"}/api/business`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

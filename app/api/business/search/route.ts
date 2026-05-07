@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const res = await fetch(`${process.env.API_URL || "http://localhost:3334"}/api/business/search?q=${encodeURIComponent(q)}`, {
+    const res = await fetch(`${process.env.API_URL || "https://tickets.danykhn.com"}/api/business/search?q=${encodeURIComponent(q)}`, {
       headers: {
         "Content-Type": "application/json",
       },
