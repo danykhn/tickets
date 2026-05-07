@@ -8,6 +8,7 @@ import { jsPDF } from "jspdf"
 import type { TicketItem, BusinessInfo, InvoiceInfo, CustomerInfo, PaymentInfo, FiscalInfo, CustomTax, TicketStyle } from "@/lib/ticket-types"
 import { calculateTicket, formatCurrency, formatQuantity } from "@/lib/ticket-types"
 import { TicketPreview } from "./ticket-preview"
+import { createBusiness } from "@/lib/api/business"
 
 interface PrintExportProps {
   items: TicketItem[]
@@ -57,11 +58,7 @@ export function PrintExport({
     }
     
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3334"}/api/business`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(businessData),
-      })
+      await createBusiness(businessData)
     } catch (error) {
       console.error("Error saving business:", error)
     }
