@@ -9,6 +9,7 @@ import type { TicketItem, BusinessInfo, InvoiceInfo, CustomerInfo, PaymentInfo, 
 import { calculateTicket, formatCurrency, formatQuantity } from "@/lib/ticket-types"
 import { TicketPreview } from "./ticket-preview"
 import { createBusiness } from "@/lib/api/business"
+import { parseDDMMYYYYToISO } from "@/lib/utils"
 
 interface PrintExportProps {
   items: TicketItem[]
@@ -35,13 +36,7 @@ export function PrintExport({
 
   const handlePrint = async () => {
     // Guardar negocio en el backend
-    let startDateFormatted = null
-    if (businessInfo.startDate) {
-      const date = new Date(businessInfo.startDate)
-      if (!isNaN(date.getTime())) {
-        startDateFormatted = date.toISOString()
-      }
-    }
+    const startDateFormatted = parseDDMMYYYYToISO(businessInfo.startDate || "")
     
     const businessData = {
       businessName: businessInfo.businessName,
@@ -54,10 +49,16 @@ export function PrintExport({
       province: businessInfo.province,
       startDate: startDateFormatted,
       taxCategory: businessInfo.taxCategory,
-      logo: businessInfo.logo,
+      logo: businessInfo.logo || "",
+      // Customer info
+      customerTaxCategory: customerInfo.taxCategory,
+      customerCity: customerInfo.city,
+      customerPostalCode: customerInfo.postalCode,
+      customerProvince: customerInfo.province,
     }
     
     try {
+      console.log("try", businessData)
       await createBusiness(businessData)
     } catch (error) {
       console.error("Error saving business:", error)

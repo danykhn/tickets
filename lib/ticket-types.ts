@@ -24,7 +24,11 @@ export interface BusinessInfo {
   postalCode: string
   province: string
   startDate: string
-  taxCategory: string
+  taxCategory: string 
+  customerTaxCategory: string
+  customerCity: string
+  customerPostalCode: string
+  customerProvince: string 
 }
 
 export interface InvoiceInfo {
@@ -132,6 +136,10 @@ export function getDefaultBusinessInfo(): BusinessInfo {
     province: "PROVINCIA",
     startDate: "01/01/2020",
     taxCategory: "IVA RESPONSABLE INSCRIPTO",
+    customerTaxCategory: "IVA RESPONSABLE INSCRIPTO",
+    customerCity: "CIUDAD",
+    customerPostalCode: "0000",
+    customerProvince: "PROVINCIA",
   }
 }
 

@@ -16,6 +16,7 @@ import {
   TICKET_FONT_WEIGHT_OPTIONS, 
   TICKET_LINE_HEIGHT_OPTIONS 
 } from "@/lib/ticket-types"
+import { formatDateToDDMMYYYY, parseDDMMYYYYToISO } from "@/lib/utils"
 
 interface TicketFormProps {
   items: TicketItem[]
@@ -110,6 +111,7 @@ export function TicketForm({
 
   const selectBusiness = (business: BusinessInfo & { id?: string }) => {
     console.log("Selecting business:", business)
+    const formattedStartDate = formatDateToDDMMYYYY(business.startDate)
     onBusinessInfoChange({
       logo: business.logo,
       businessName: business.businessName,
@@ -120,8 +122,19 @@ export function TicketForm({
       city: business.city,
       postalCode: business.postalCode,
       province: business.province,
-      startDate: business.startDate,
+      startDate: formattedStartDate,
       taxCategory: business.taxCategory,
+      customerTaxCategory: business.customerTaxCategory,
+      customerCity: business.customerCity,
+      customerPostalCode: business.customerPostalCode,
+      customerProvince: business.customerProvince,
+    })
+    // Auto-complete customer info fields
+    onCustomerInfoChange({
+      taxCategory: business.customerTaxCategory || "",
+      city: business.customerCity || "",
+      postalCode: business.customerPostalCode || "",
+      province: business.customerProvince || "",
     })
     setBusinessSearch("")
     setBusinessResults([])
@@ -381,8 +394,9 @@ export function TicketForm({
               <div>
                 <Label className="text-xs">Inicio de Actividad</Label>
                 <Input
-                  value={businessInfo.startDate}
+                  value={businessInfo.startDate || ""}
                   onChange={(e) => onBusinessInfoChange({ ...businessInfo, startDate: e.target.value })}
+                  placeholder="DD/MM/YYYY"
                   className="mt-1 h-8 text-sm"
                 />
               </div>

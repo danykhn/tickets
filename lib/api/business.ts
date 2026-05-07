@@ -13,6 +13,11 @@ export interface BusinessPayload {
   startDate: string | null
   taxCategory: string
   logo: string
+  // Customer info
+  customerTaxCategory?: string
+  customerCity?: string
+  customerPostalCode?: string
+  customerProvince?: string
 }
 
 export async function searchBusinesses(query: string): Promise<BusinessInfo[]> {
@@ -30,5 +35,6 @@ export async function searchBusinesses(query: string): Promise<BusinessInfo[]> {
 }
 
 export async function createBusiness(payload: BusinessPayload): Promise<void> {
+  console.log("Creating business with payload:", payload)
   await apiClient.post("/api/business", payload)
 }
