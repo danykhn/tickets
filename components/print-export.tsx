@@ -51,6 +51,10 @@ export function PrintExport({
       taxCategory: businessInfo.taxCategory,
       logo: businessInfo.logo || "",
       // Customer info
+      customerName: customerInfo.name,
+      customerLastName: customerInfo.lastName,
+      customerCuit: customerInfo.cuit,
+      customerAddress: customerInfo.address,
       customerTaxCategory: customerInfo.taxCategory,
       customerCity: customerInfo.city,
       customerPostalCode: customerInfo.postalCode,
@@ -204,11 +208,23 @@ export function PrintExport({
     y += 3
 
     // Customer Info
+    if (customerInfo.lastName || customerInfo.name) {
+      doc.text(`${customerInfo.lastName} ${customerInfo.name}`, leftMargin, y)
+      y += lineHeight
+    }
+    if (customerInfo.cuit) {
+      doc.text(`CUIT: ${customerInfo.cuit}`, leftMargin, y)
+      y += lineHeight
+    }
     doc.text(customerInfo.taxCategory, leftMargin, y)
     y += lineHeight
-    doc.text(`${customerInfo.city} (${customerInfo.postalCode})`, leftMargin, y)
+    if (customerInfo.address) {
+      doc.text(customerInfo.address, leftMargin, y)
+      y += lineHeight
+    }
+    doc.text(`${customerInfo.province} (${customerInfo.postalCode})`, leftMargin, y)
     y += lineHeight
-    doc.text(customerInfo.province, leftMargin, y)
+    doc.text(customerInfo.city, leftMargin, y)
     y += lineHeight + 1
 
     // Separator
@@ -417,9 +433,18 @@ function generatePrintHTML(
 
   // Customer Info
   html += `<div class="section">`
+  if (customerInfo.lastName || customerInfo.name) {
+    html += `<div>${customerInfo.lastName} ${customerInfo.name}</div>`
+  }
+  if (customerInfo.cuit) {
+    html += `<div>CUIT: ${customerInfo.cuit}</div>`
+  }
   html += `<div>${customerInfo.taxCategory}</div>`
-  html += `<div>${customerInfo.city} (${customerInfo.postalCode})</div>`
-  html += `<div>${customerInfo.province}</div>`
+  if (customerInfo.address) {
+    html += `<div>${customerInfo.address}</div>`
+  }
+  html += `<div>${customerInfo.province} (${customerInfo.postalCode})</div>`
+  html += `<div>${customerInfo.city}</div>`
   html += `</div>`
 
   // Separator
@@ -466,10 +491,11 @@ function generatePrintHTML(
 
   // Fiscal Footer
 
-  html += `<div class="section" style="margin-top:30px; margin-bottom: 30px;">`
+  html += `<div class="section" style="margin-top:90px; margin-bottom: 30px;">`
   html += `<div class="bold"><span style="font-family:'Bradley Hand ITC', cursive;">CF</span> ${fiscalInfo.cae}</div>`
   html += `<div class="row italic"><span style="font-family:'Bradley Hand ITC', cursive;">DGI</span><span>${fiscalInfo.dgiVersion}  ${fiscalInfo.operatorName}</span></div>`
   html += `</div>`
+  html += `<span style="margin-top:14px;">.</span>`
 
   return html
 }

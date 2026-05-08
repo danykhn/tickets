@@ -9,12 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Plus, Trash2, Building2, FileText, User, CreditCard, Shield, Type, ImageIcon, X } from "lucide-react"
 import type { TicketItem, BusinessInfo, InvoiceInfo, CustomerInfo, PaymentInfo, FiscalInfo, CustomTax, TicketStyle } from "@/lib/ticket-types"
-import { 
-  generateId, 
-  TICKET_FONT_OPTIONS, 
-  TICKET_FONT_SIZE_OPTIONS, 
-  TICKET_FONT_WEIGHT_OPTIONS, 
-  TICKET_LINE_HEIGHT_OPTIONS 
+import {
+  generateId,
+  TICKET_FONT_OPTIONS,
+  TICKET_FONT_SIZE_OPTIONS,
+  TICKET_FONT_WEIGHT_OPTIONS,
+  TICKET_LINE_HEIGHT_OPTIONS
 } from "@/lib/ticket-types"
 import { formatDateToDDMMYYYY, parseDDMMYYYYToISO } from "@/lib/utils"
 
@@ -56,7 +56,7 @@ export function TicketForm({
   onTicketStyleChange,
 }: TicketFormProps) {
   const logoInputRef = useRef<HTMLInputElement>(null)
-  
+
   const [newItem, setNewItem] = useState<Omit<TicketItem, "id">>({
     productName: "",
     brand: "",
@@ -124,6 +124,10 @@ export function TicketForm({
       province: business.province,
       startDate: formattedStartDate,
       taxCategory: business.taxCategory,
+      customerName: business.customerName,
+      customerLastName: business.customerLastName,
+      customerCuit: business.customerCuit,
+      customerAddress: business.customerAddress,
       customerTaxCategory: business.customerTaxCategory,
       customerCity: business.customerCity,
       customerPostalCode: business.customerPostalCode,
@@ -131,6 +135,10 @@ export function TicketForm({
     })
     // Auto-complete customer info fields
     onCustomerInfoChange({
+      name: business.customerName || "",
+      lastName: business.customerLastName || "",
+      cuit: business.customerCuit || "",
+      address: business.customerAddress || "",
       taxCategory: business.customerTaxCategory || "",
       city: business.customerCity || "",
       postalCode: business.customerPostalCode || "",
@@ -258,9 +266,9 @@ export function TicketForm({
                   />
                   {businessInfo.logo ? (
                     <div className="relative">
-                      <img 
-                        src={businessInfo.logo} 
-                        alt="Logo" 
+                      <img
+                        src={businessInfo.logo}
+                        alt="Logo"
                         className="h-16 w-auto object-contain border rounded"
                       />
                       <Button
@@ -504,6 +512,43 @@ export function TicketForm({
           </AccordionTrigger>
           <AccordionContent>
             <div className="grid grid-cols-2 gap-3 pb-4">
+              <div>
+                <Label className="text-xs">Apellido</Label>
+                <Input
+                  value={customerInfo.lastName || ""}
+                  onChange={(e) => onCustomerInfoChange({ ...customerInfo, lastName: e.target.value })}
+                  placeholder="Apellido del cliente"
+                  className="mt-1 h-8 text-sm"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Nombre</Label>
+                <Input
+                  value={customerInfo.name || ""}
+                  onChange={(e) => onCustomerInfoChange({ ...customerInfo, name: e.target.value })}
+                  placeholder="Nombre del cliente"
+                  className="mt-1 h-8 text-sm"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs">CUIT</Label>
+                <Input
+                  value={customerInfo.cuit || ""}
+                  onChange={(e) => onCustomerInfoChange({ ...customerInfo, cuit: e.target.value })}
+                  placeholder="XX-XXXXXXXX-X"
+                  className="mt-1 h-8 text-sm"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Direccion</Label>
+                <Input
+                  value={customerInfo.address || ""}
+                  onChange={(e) => onCustomerInfoChange({ ...customerInfo, address: e.target.value })}
+                  placeholder="Dirección del cliente"
+                  className="mt-1 h-8 text-sm"
+                />
+              </div>
               <div className="col-span-2">
                 <Label className="text-xs">Condicion ante IVA</Label>
                 <Select

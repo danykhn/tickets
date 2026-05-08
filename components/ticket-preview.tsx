@@ -104,9 +104,14 @@ export const TicketPreview = forwardRef<HTMLDivElement, TicketPreviewProps>(
 
         {/* Customer Info */}
         <div className="mb-2" style={{ lineHeight: ticketStyle.lineHeight }}>
+          {(customerInfo.lastName || customerInfo.name) && (
+            <div>{customerInfo.lastName} {customerInfo.name}</div>
+          )}
+          {customerInfo.cuit && <div>CUIT: {customerInfo.cuit}</div>}
           <div>{customerInfo.taxCategory}</div>
-          <div>{customerInfo.city} ({customerInfo.postalCode})</div>
-          <div>{customerInfo.province}</div>
+          {customerInfo.address && <div>{customerInfo.address}</div>}
+          <div>{customerInfo.province} ({customerInfo.postalCode})</div>
+          <div>{customerInfo.city}</div>
         </div>
 
         {/* Separator */}

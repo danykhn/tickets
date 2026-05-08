@@ -14,6 +14,10 @@ export interface BusinessPayload {
   taxCategory: string
   logo: string
   // Customer info
+  customerName?: string
+  customerLastName?: string
+  customerCuit?: string
+  customerAddress?: string
   customerTaxCategory?: string
   customerCity?: string
   customerPostalCode?: string

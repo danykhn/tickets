@@ -25,6 +25,10 @@ export interface BusinessInfo {
   province: string
   startDate: string
   taxCategory: string 
+  customerName?: string
+  customerLastName?: string
+  customerCuit?: string
+  customerAddress?: string
   customerTaxCategory: string
   customerCity: string
   customerPostalCode: string
@@ -41,6 +45,10 @@ export interface InvoiceInfo {
 }
 
 export interface CustomerInfo {
+  name?: string
+  lastName?: string
+  cuit?: string
+  address?: string
   taxCategory: string
   city: string
   postalCode: string
@@ -136,6 +144,10 @@ export function getDefaultBusinessInfo(): BusinessInfo {
     province: "PROVINCIA",
     startDate: "01/01/2020",
     taxCategory: "IVA RESPONSABLE INSCRIPTO",
+    customerName: "",
+    customerLastName: "",
+    customerCuit: "",
+    customerAddress: "",
     customerTaxCategory: "IVA RESPONSABLE INSCRIPTO",
     customerCity: "CIUDAD",
     customerPostalCode: "0000",
@@ -157,6 +169,10 @@ export function getDefaultInvoiceInfo(): InvoiceInfo {
 
 export function getDefaultCustomerInfo(): CustomerInfo {
   return {
+    name: "",
+    lastName: "",
+    cuit: "",
+    address: "",
     taxCategory: "IVA RESPONSABLE INSCRIPTO",
     city: "CIUDAD",
     postalCode: "0000",
